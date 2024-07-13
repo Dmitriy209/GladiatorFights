@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GladiatorFights
 {
@@ -126,10 +127,14 @@ namespace GladiatorFights
                 Console.WriteLine($"\nРаунд {numberRound}.\n");
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                firstFighter.TakeDamage(secondFighter.Attack());
+                firstFighter.Attack(secondFighter);
+                //firstFighter.TakeDamage(secondFighter.Attack());
+
+
 
                 Console.ForegroundColor = ConsoleColor.Red;
-                secondFighter.TakeDamage(firstFighter.Attack());
+                secondFighter.Attack(firstFighter);
+                //secondFighter.TakeDamage(firstFighter.Attack());
 
                 Console.ResetColor();
             }
@@ -243,10 +248,10 @@ namespace GladiatorFights
 
         public int Health { get; protected set; }
 
-        public virtual int Attack()
+        public virtual void Attack(Fighter fighter)
         {
             ShowAttackMessage();
-            return Damage;
+            fighter.TakeDamage(Damage);
         }
 
         public void ShowAttackMessage()
@@ -279,15 +284,12 @@ namespace GladiatorFights
         private int _maxDamageBooster = 2;
         private int _standartDamageBooster = 1;
 
-        public CriticalMaster(string name, int health, int damage) : base(name, health, damage)
-        {
+        public CriticalMaster(string name, int health, int damage) : base(name, health, damage) { }
 
-        }
-
-        public override int Attack()
+        public override void Attack(Fighter fighter)
         {
             ShowAttackMessage();
-            return Damage * DamageBooster();
+            fighter.TakeDamage(Damage * DamageBooster());
         }
 
         private int DamageBooster()
@@ -321,27 +323,30 @@ namespace GladiatorFights
         private int _attackCounter = 1;
         private int _attackCounterDoubleDamage = 3;
 
-        public DoubleDamageMaster(string name, int health, int damage) : base(name, health, damage)
-        {
+        public DoubleDamageMaster(string name, int health, int damage) : base(name, health, damage) { }
 
-        }
-
-        public override int Attack()
+        public override void Attack(Fighter fighter)
         {
             ShowAttackMessage();
 
             if (TryDoubleDamage())
             {
                 Console.WriteLine("Двойной урон!");
-                return Damage * _maxDamageBooster;
+                fighter.TakeDamage(Damage * _maxDamageBooster);
             }
             else
             {
-                return base.Attack();
+                base.Attack(fighter);
             }
         }
 
-        public bool TryDoubleDamage()
+        public override void ShowStats()
+        {
+            Console.WriteLine(_doubleDamageMaster);
+            base.ShowStats();
+        }
+
+        private bool TryDoubleDamage()
         {
             if (_attackCounterDoubleDamage == _attackCounter)
             {
@@ -355,12 +360,6 @@ namespace GladiatorFights
                 return false;
             }
         }
-
-        public override void ShowStats()
-        {
-            Console.WriteLine(_doubleDamageMaster);
-            base.ShowStats();
-        }
     }
 
     class Barbarian : Fighter
@@ -371,10 +370,7 @@ namespace GladiatorFights
         private int _maxRage = 30;
         private int _heal = 15;
 
-        public Barbarian(string name, int health, int damage) : base(name, health, damage)
-        {
-
-        }
+        public Barbarian(string name, int health, int damage) : base(name, health, damage) { }
 
         public override void TakeDamage(int damage)
         {
@@ -418,25 +414,21 @@ namespace GladiatorFights
         private int _fireBallCost = 25;
         private int _fireBallDamageBonus = 2;
 
+        public Wizard(string name, int health, int damage) : base(name, health, damage) { }
 
-        public Wizard(string name, int health, int damage) : base(name, health, damage)
-        {
-
-        }
-
-        public override int Attack()
+        public override void Attack(Fighter fighter)
         {
             ShowAttackMessage();
 
             if (_mana >= _fireBallCost)
             {
                 Console.WriteLine("Мана ещё есть лови FireBall!");
-                return CastFireBall();
+                fighter.TakeDamage(CastFireBall());
             }
             else
             {
-                Console.WriteLine("Мана кончилась в рукопашную!");
-                return base.Attack();
+                Console.WriteLine("Мана кончилась, в рукопашную!");
+                base.Attack(fighter);
             }
         }
 
@@ -458,10 +450,7 @@ namespace GladiatorFights
         private string _rogue = "Rogue";
         private int _dodgeChancePercent = 25;
 
-        public Rogue(string name, int health, int damage) : base(name, health, damage)
-        {
-
-        }
+        public Rogue(string name, int health, int damage) : base(name, health, damage) { }
 
         public override void TakeDamage(int damage)
         {
