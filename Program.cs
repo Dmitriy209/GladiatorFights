@@ -327,10 +327,9 @@ namespace GladiatorFights
 
         public override void Attack(Fighter fighter)
         {
-            ShowAttackMessage();
-
             if (TryDoubleDamage())
             {
+                ShowAttackMessage();
                 Console.WriteLine("Двойной урон!");
                 fighter.TakeDamage(Damage * _maxDamageBooster);
             }
@@ -418,10 +417,9 @@ namespace GladiatorFights
 
         public override void Attack(Fighter fighter)
         {
-            ShowAttackMessage();
-
             if (_mana >= _fireBallCost)
             {
+                ShowAttackMessage();
                 Console.WriteLine("Мана ещё есть лови FireBall!");
                 fighter.TakeDamage(CastFireBall());
             }
