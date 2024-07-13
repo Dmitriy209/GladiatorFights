@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace GladiatorFights
 {
