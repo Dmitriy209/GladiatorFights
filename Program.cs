@@ -128,13 +128,9 @@ namespace GladiatorFights
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 firstFighter.Attack(secondFighter);
-                //firstFighter.TakeDamage(secondFighter.Attack());
-
-
 
                 Console.ForegroundColor = ConsoleColor.Red;
                 secondFighter.Attack(firstFighter);
-                //secondFighter.TakeDamage(firstFighter.Attack());
 
                 Console.ResetColor();
             }
