@@ -323,8 +323,7 @@ namespace GladiatorFights
 
         public override void TakeDamage(int damage)
         {
-            Health -= damage;
-            Console.WriteLine($"{Name} получил {damage} урона и у него осталось {Health} здоровья.");
+            base.TakeDamage(damage);
 
             if (TryHeal(damage))
             {
@@ -405,7 +404,7 @@ namespace GladiatorFights
             if (TryDodge())
                 Console.WriteLine($"Промахнулся! У меня всё ещё {Health}.");
             else
-                Health -= damage;
+                base.TakeDamage(damage);
         }
 
         public override void ShowStats()
