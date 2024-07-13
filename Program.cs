@@ -33,7 +33,7 @@ namespace GladiatorFights
                 switch (userInput)
                 {
                     case CommandStart:
-                        Start();
+                        Play();
                         break;
 
                     case CommandExit:
@@ -50,55 +50,23 @@ namespace GladiatorFights
             Console.WriteLine("Программа завершена.");
         }
 
-        private void Start()
+        private void Play()
         {
-            const string CriticalMaster = "1";
-            const string DoubleDamageMaster = "2";
-            const string Barbarian = "3";
-            const string Wizard = "4";
-            const string Rogue = "5";
-
             int fightersAmount = 2;
 
             Fighter[] fighters = new Fighter[fightersAmount];
 
             for (int i = 0; i < fighters.Length; i++)
             {
-                Console.WriteLine($"Выберите бойца:\n" +
-                    $"{CriticalMaster} - класс CriticalMaster.\n" +
-                    $"{DoubleDamageMaster} - класс DoubleDamageMaster.\n" +
-                    $"{Barbarian} - класс Barbarian.\n" +
-                    $"{Wizard} - класс Wizard.\n" +
-                    $"{Rogue} - класс Rogue.");
-                string userInput = Console.ReadLine();
+                List<Fighter> availableFighters = CreateFighters();
 
-                switch (userInput)
+                for (int j = 0; j < availableFighters.Count; j++)
                 {
-                    case CriticalMaster:
-                        fighters[i] = CreateCriticalMaster();
-                        break;
-
-                    case DoubleDamageMaster:
-                        fighters[i] = CreateDoubleDamageMaster();
-                        break;
-
-                    case Barbarian:
-                        fighters[i] = CreateBarbarian();
-                        break;
-
-                    case Wizard:
-                        fighters[i] = CreateWizard();
-                        break;
-
-                    case Rogue:
-                        fighters[i] = CreateRogue();
-                        break;
-
-                    default:
-                        Console.WriteLine("Такого бойца нет.");
-                        i--;
-                        break;
+                    Console.Write($"Введите {j}, чтобы выбрать:");
+                    availableFighters[j].ShowStats();
                 }
+
+                fighters[i] = availableFighters[ReadIndex(availableFighters.Count)];
             }
 
             Console.Clear();
@@ -113,10 +81,36 @@ namespace GladiatorFights
             Fight(fighters);
         }
 
+        private int ReadIndex(int arrayLength)
+        {
+            int index;
+            int firstIndex = 0;
+            int lastIndex = arrayLength - 1;
+
+            do
+            {
+                Console.WriteLine($"Введите индекс от {firstIndex} до {lastIndex}.");
+                index = ReadInt();
+            }
+            while (index < firstIndex || index > lastIndex);
+
+            return index;
+        }
+
+        private int ReadInt()
+        {
+            int number;
+
+            while (int.TryParse(Console.ReadLine(), out number) == false)
+                Console.WriteLine("Это не число.");
+
+            return number;
+        }
+
         private void Fight(Fighter[] fighters)
         {
-            var firstFighter = fighters[0];
-            var secondFighter = fighters[1];
+            Fighter firstFighter = fighters[0];
+            Fighter secondFighter = fighters[1];
 
             int numberRound = 0;
 
@@ -155,59 +149,19 @@ namespace GladiatorFights
             Console.ReadLine();
         }
 
-        private CriticalMaster CreateCriticalMaster()
+        private List<Fighter> CreateFighters()
         {
             CreateFighterStats(out int health, out int damage);
 
-            CriticalMaster criticalMaster = new CriticalMaster(GetName(), health, damage);
+            List<Fighter> fighters = new List<Fighter>();
 
-            criticalMaster.ShowStats();
+            fighters.Add(new CriticalMaster(GetName(), health, damage));
+            fighters.Add(new DoubleDamageMaster(GetName(), health, damage));
+            fighters.Add(new Barbarian(GetName(), health, damage));
+            fighters.Add(new Wizard(GetName(), health, damage));
+            fighters.Add(new Rogue(GetName(), health, damage));
 
-            return criticalMaster;
-        }
-
-        private DoubleDamageMaster CreateDoubleDamageMaster()
-        {
-            CreateFighterStats(out int health, out int damage);
-
-            DoubleDamageMaster doubleDamageMaster = new DoubleDamageMaster(GetName(), health, damage);
-
-            doubleDamageMaster.ShowStats();
-
-            return doubleDamageMaster;
-        }
-
-        private Barbarian CreateBarbarian()
-        {
-            CreateFighterStats(out int health, out int damage);
-
-            Barbarian barbarian = new Barbarian(GetName(), health, damage);
-
-            barbarian.ShowStats();
-
-            return barbarian;
-        }
-
-        private Wizard CreateWizard()
-        {
-            CreateFighterStats(out int health, out int damage);
-
-            Wizard wizard = new Wizard(GetName(), health, damage);
-
-            wizard.ShowStats();
-
-            return wizard;
-        }
-
-        private Rogue CreateRogue()
-        {
-            CreateFighterStats(out int health, out int damage);
-
-            Rogue Rogue = new Rogue(GetName(), health, damage);
-
-            Rogue.ShowStats();
-
-            return Rogue;
+            return fighters;
         }
 
         private void CreateFighterStats(out int health, out int damage)
@@ -261,14 +215,14 @@ namespace GladiatorFights
             ShowTakeDamageMessage(damage);
         }
 
-        public void ShowTakeDamageMessage(int damage)
-        {
-            Console.WriteLine($"{Name} получил {damage} урона и у него осталось {Health} здоровья.");
-        }
-
         public virtual void ShowStats()
         {
             Console.WriteLine($"Боец {Name} имеет {Health} здоровья и наносит {Damage} урона.");
+        }
+
+        private void ShowTakeDamageMessage(int damage)
+        {
+            Console.WriteLine($"{Name} получил {damage} урона и у него осталось {Health} здоровья.");
         }
     }
 
@@ -285,10 +239,16 @@ namespace GladiatorFights
         public override void Attack(Fighter fighter)
         {
             ShowAttackMessage();
-            fighter.TakeDamage(Damage * DamageBooster());
+            fighter.TakeDamage(Damage * IncreaseDamage());
         }
 
-        private int DamageBooster()
+        public override void ShowStats()
+        {
+            Console.WriteLine(_nameClass);
+            base.ShowStats();
+        }
+
+        private int IncreaseDamage()
         {
             int minLimitPercent = 0;
             int maxLimitPercent = 100;
@@ -303,17 +263,11 @@ namespace GladiatorFights
                 return _standartDamageBooster;
             }
         }
-
-        public override void ShowStats()
-        {
-            Console.WriteLine(_nameClass);
-            base.ShowStats();
-        }
     }
 
     class DoubleDamageMaster : Fighter
     {
-        private string _doubleDamageMaster = "DoubleDamageMaster";
+        private string _nameClass = "DoubleDamageMaster";
 
         private int _maxDamageBooster = 2;
         private int _attackCounter = 1;
@@ -337,7 +291,7 @@ namespace GladiatorFights
 
         public override void ShowStats()
         {
-            Console.WriteLine(_doubleDamageMaster);
+            Console.WriteLine(_nameClass);
             base.ShowStats();
         }
 
@@ -359,7 +313,7 @@ namespace GladiatorFights
 
     class Barbarian : Fighter
     {
-        private string _barbarian = "Barbarian";
+        private string _nameClass = "Barbarian";
 
         private int _rage;
         private int _maxRage = 30;
@@ -379,7 +333,13 @@ namespace GladiatorFights
             }
         }
 
-        public bool TryHeal(int damage)
+        public override void ShowStats()
+        {
+            Console.WriteLine(_nameClass);
+            base.ShowStats();
+        }
+
+        private bool TryHeal(int damage)
         {
             if (_rage >= _maxRage)
             {
@@ -393,17 +353,11 @@ namespace GladiatorFights
                 return false;
             }
         }
-
-        public override void ShowStats()
-        {
-            Console.WriteLine(_barbarian);
-            base.ShowStats();
-        }
     }
 
     class Wizard : Fighter
     {
-        private string _wizard = "Wizard";
+        private string _nameClass = "Wizard";
 
         private int _mana = 100;
         private int _fireBallCost = 25;
@@ -426,22 +380,22 @@ namespace GladiatorFights
             }
         }
 
+        public override void ShowStats()
+        {
+            Console.WriteLine(_nameClass);
+            base.ShowStats();
+        }
+
         private int CastFireBall()
         {
             _mana -= _fireBallCost;
             return Damage * _fireBallDamageBonus;
         }
-
-        public override void ShowStats()
-        {
-            Console.WriteLine(_wizard);
-            base.ShowStats();
-        }
     }
 
     class Rogue : Fighter
     {
-        private string _rogue = "Rogue";
+        private string _nameClass = "Rogue";
         private int _dodgeChancePercent = 25;
 
         public Rogue(string name, int health, int damage) : base(name, health, damage) { }
@@ -452,6 +406,12 @@ namespace GladiatorFights
                 Console.WriteLine($"Промахнулся! У меня всё ещё {Health}.");
             else
                 Health -= damage;
+        }
+
+        public override void ShowStats()
+        {
+            Console.WriteLine(_nameClass);
+            base.ShowStats();
         }
 
         private bool TryDodge()
@@ -468,12 +428,6 @@ namespace GladiatorFights
             {
                 return false;
             }
-        }
-
-        public override void ShowStats()
-        {
-            Console.WriteLine(_rogue);
-            base.ShowStats();
         }
     }
 
