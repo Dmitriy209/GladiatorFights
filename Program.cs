@@ -186,8 +186,7 @@ namespace GladiatorFights
 
     class Fighter
     {
-        protected string Name;
-        protected int Damage;
+        private string Name;
 
         public Fighter(string name, int health, int damage)
         {
@@ -196,12 +195,21 @@ namespace GladiatorFights
             Damage = damage;
         }
 
+        public int Damage { get; private set; }
+
         public int Health { get; protected set; }
 
         public virtual void Attack(Fighter fighter)
         {
-            ShowAttackMessage();
-            fighter.TakeDamage(Damage);
+            if (fighter != null)
+            {
+                ShowAttackMessage();
+                fighter.TakeDamage(Damage);
+            }
+            else
+            {
+                Console.WriteLine("Бойца нет.");
+            }
         }
 
         public void ShowAttackMessage()
@@ -228,7 +236,7 @@ namespace GladiatorFights
 
     class CriticalMaster : Fighter
     {
-        private string _nameClass = "CriticalMaster";
+        private string _nameClass = nameof(CriticalMaster);
 
         private int _criticalChancePercent = 25;
         private int _maxDamageBooster = 2;
@@ -238,8 +246,15 @@ namespace GladiatorFights
 
         public override void Attack(Fighter fighter)
         {
-            ShowAttackMessage();
-            fighter.TakeDamage(Damage * IncreaseDamage());
+            if (fighter != null)
+            {
+                ShowAttackMessage();
+                fighter.TakeDamage(Damage * IncreaseDamage());
+            }
+            else
+            {
+                Console.WriteLine("Бойца нет.");
+            }
         }
 
         public override void ShowStats()
@@ -267,7 +282,7 @@ namespace GladiatorFights
 
     class DoubleDamageMaster : Fighter
     {
-        private string _nameClass = "DoubleDamageMaster";
+        private string _nameClass = nameof(DoubleDamageMaster);
 
         private int _maxDamageBooster = 2;
         private int _attackCounter = 1;
@@ -277,15 +292,22 @@ namespace GladiatorFights
 
         public override void Attack(Fighter fighter)
         {
-            if (TryDoubleDamage())
+            if (fighter != null)
             {
-                ShowAttackMessage();
-                Console.WriteLine("Двойной урон!");
-                fighter.TakeDamage(Damage * _maxDamageBooster);
+                if (TryDoubleDamage())
+                {
+                    ShowAttackMessage();
+                    Console.WriteLine("Двойной урон!");
+                    fighter.TakeDamage(Damage * _maxDamageBooster);
+                }
+                else
+                {
+                    base.Attack(fighter);
+                }
             }
             else
             {
-                base.Attack(fighter);
+                Console.WriteLine("Бойца нет.");
             }
         }
 
@@ -313,7 +335,7 @@ namespace GladiatorFights
 
     class Barbarian : Fighter
     {
-        private string _nameClass = "Barbarian";
+        private string _nameClass = nameof(Barbarian);
 
         private int _rage;
         private int _maxRage = 30;
@@ -356,7 +378,7 @@ namespace GladiatorFights
 
     class Wizard : Fighter
     {
-        private string _nameClass = "Wizard";
+        private string _nameClass = nameof(Wizard);
 
         private int _mana = 100;
         private int _fireBallCost = 25;
@@ -366,16 +388,23 @@ namespace GladiatorFights
 
         public override void Attack(Fighter fighter)
         {
-            if (_mana >= _fireBallCost)
+            if (fighter != null)
             {
-                ShowAttackMessage();
-                Console.WriteLine("Мана ещё есть лови FireBall!");
-                fighter.TakeDamage(CastFireBall());
+                if (_mana >= _fireBallCost)
+                {
+                    ShowAttackMessage();
+                    Console.WriteLine("Мана ещё есть лови FireBall!");
+                    fighter.TakeDamage(CastFireBall());
+                }
+                else
+                {
+                    Console.WriteLine("Мана кончилась, в рукопашную!");
+                    base.Attack(fighter);
+                }
             }
             else
             {
-                Console.WriteLine("Мана кончилась, в рукопашную!");
-                base.Attack(fighter);
+                Console.WriteLine("Бойца нет.");
             }
         }
 
@@ -394,7 +423,7 @@ namespace GladiatorFights
 
     class Rogue : Fighter
     {
-        private string _nameClass = "Rogue";
+        private string _nameClass = nameof(Rogue);
         private int _dodgeChancePercent = 25;
 
         public Rogue(string name, int health, int damage) : base(name, health, damage) { }
